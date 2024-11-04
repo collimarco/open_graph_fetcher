@@ -7,6 +7,7 @@ module OpenGraphFetcher
   class Fetcher
     OG_PROPERTIES = %w[title type image url description].freeze
     
+    DNS_TIMEOUT = 3
     OPEN_TIMEOUT = 3
     READ_TIMEOUT = 3
 
@@ -22,6 +23,7 @@ module OpenGraphFetcher
       uri = URI.parse(@url)
       raise InvalidSchemeError, "Only HTTPS URLs are allowed" unless uri.scheme == "https"
       raise InvalidPortError, "Only the default HTTPS port (443) is allowed" if uri.port && uri.port != 443
+      raise InvalidHostError, "Using an IP as host is not allowed" if ip_address?(uri.hostname)
 
       ip_address = resolve_ip(uri)
       raise PrivateIPError, "Resolved IP address is in a private or reserved range" if private_ip?(ip_address)
@@ -36,9 +38,16 @@ module OpenGraphFetcher
     private
 
     def resolve_ip(uri)
-      Resolv.getaddress(uri.host)
+      Resolv::DNS.open do |dns|
+        dns.timeouts = DNS_TIMEOUT
+        dns.getaddress(uri.hostname).to_s
+      end
     rescue Resolv::ResolvError => e
       raise IPResolutionError, "Could not resolve IP: #{e.message}"
+    end
+    
+    def ip_address?(host)
+      host =~ Resolv::IPv4::Regex || host =~ Resolv::IPv6::Regex
     end
 
     def private_ip?(ip)

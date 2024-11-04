@@ -3,10 +3,11 @@
 Fetch Open Graph metadata in a safer way.
 
 - Includes some mitigations for SSRF attacks
-- Blocks private and local IP ranges
+- Blocks the direct usage of IP addresses in URLs
+- Blocks private and local IP ranges (after DNS resolution)
 - Avoids TOC/TOU when connecting to the IP
 - Supports only HTTPS on the standard port (443)
-- Includes request timeouts
+- Includes request timeouts (for DNS and HTTP)
 - Avoids redirects
 - Allows only text/html responses
 - Returns only known OG properties and nothing else

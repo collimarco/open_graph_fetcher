@@ -4,7 +4,7 @@ require 'webmock/rspec'
 RSpec.describe OpenGraphFetcher::Fetcher do
 
   before do
-    allow(Resolv).to receive(:getaddress).and_return("203.0.113.0")
+    allow(Resolv::DNS).to receive(:open).and_return("203.0.113.0")
   end
 
   describe ".fetch" do
@@ -51,20 +51,26 @@ RSpec.describe OpenGraphFetcher::Fetcher do
         expect { OpenGraphFetcher::Fetcher.fetch("https://example.com:8443") }.to raise_error(OpenGraphFetcher::InvalidPortError)
       end
     end
+    
+    context "when given a URL with an IP address" do
+      it "raises an InvalidHostError" do
+        expect { OpenGraphFetcher::Fetcher.fetch("https://203.0.113.0/test") }.to raise_error(OpenGraphFetcher::InvalidHostError)
+      end
+    end
 
     context "when the IP address cannot be resolved" do
       it "raises an IPResolutionError with an appropriate error message" do
-        allow(Resolv).to receive(:getaddress).and_raise(Resolv::ResolvError, "DNS resolution failed")
+        allow(Resolv::DNS).to receive(:open).and_raise(Resolv::ResolvError, "DNS resolution failed")
 
-        expect { OpenGraphFetcher::Fetcher.fetch("https://nonexistent-domain.com") }.to raise_error(OpenGraphFetcher::IPResolutionError, /Could not resolve IP: DNS resolution failed/)
+        expect { OpenGraphFetcher::Fetcher.fetch("https://nonexistent.example.com") }.to raise_error(OpenGraphFetcher::IPResolutionError, /Could not resolve IP: DNS resolution failed/)
       end
     end
 
     context "when the resolved IP address is private" do
       it "raises a PrivateIPError" do
-        allow(Resolv).to receive(:getaddress).with("10.0.0.1").and_return("10.0.0.1")
+        allow(Resolv::DNS).to receive(:open).and_return("10.0.0.1")
 
-        expect { OpenGraphFetcher::Fetcher.fetch("https://10.0.0.1") }.to raise_error(OpenGraphFetcher::PrivateIPError)
+        expect { OpenGraphFetcher::Fetcher.fetch("https://ssrf.example.com") }.to raise_error(OpenGraphFetcher::PrivateIPError)
       end
     end
 
