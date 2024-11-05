@@ -39,6 +39,12 @@ RSpec.describe OpenGraphFetcher::Fetcher do
         })
       end
     end
+    
+    context "when given an invalid URL" do
+      it "raises an InvalidURIError" do
+        expect { OpenGraphFetcher::Fetcher.fetch("# test") }.to raise_error(OpenGraphFetcher::InvalidURIError)
+      end
+    end
 
     context "when given an HTTP URL" do
       it "raises an InvalidSchemeError" do

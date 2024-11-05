@@ -20,7 +20,7 @@ module OpenGraphFetcher
     end
 
     def fetch
-      uri = URI.parse(@url)
+      uri = parse_uri(@url)
       raise InvalidSchemeError, "Only HTTPS URLs are allowed" unless uri.scheme == "https"
       raise InvalidPortError, "Only the default HTTPS port (443) is allowed" if uri.port && uri.port != 443
       raise InvalidHostError, "Using an IP as host is not allowed" if ip_address?(uri.hostname)
@@ -36,6 +36,12 @@ module OpenGraphFetcher
     end
 
     private
+    
+    def parse_uri(url)
+      URI.parse(url)
+    rescue URI::InvalidURIError => e
+      raise InvalidURIError, "Could not parse URI: #{e.message}"
+    end
 
     def resolve_ip(uri)
       Resolv::DNS.open do |dns|

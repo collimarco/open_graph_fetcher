@@ -1,6 +1,7 @@
 module OpenGraphFetcher
   class Error < StandardError; end
 
+  class InvalidURIError < Error; end
   class InvalidSchemeError < Error; end
   class InvalidPortError < Error; end
   class InvalidHostError < Error; end
