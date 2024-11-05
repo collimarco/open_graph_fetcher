@@ -5,7 +5,7 @@ require 'ipaddr'
 
 module OpenGraphFetcher
   class Fetcher
-    OG_PROPERTIES = %w[title type image url description].freeze
+    OG_PROPERTIES = %w[title type image url description site_name].freeze
     
     DNS_TIMEOUT = 3
     OPEN_TIMEOUT = 3
