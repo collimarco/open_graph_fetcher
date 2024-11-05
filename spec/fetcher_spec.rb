@@ -38,6 +38,22 @@ RSpec.describe OpenGraphFetcher::Fetcher do
           "description" => "Example description"
         })
       end
+      
+      it 'sets the ipaddr and other options on the Net::HTTP instance' do
+        http_instance = instance_double(Net::HTTP)
+        expect(Net::HTTP).to receive(:new).and_return(http_instance)
+
+        expect(http_instance).to receive(:ipaddr=).with("203.0.113.0")
+        expect(http_instance).to receive(:use_ssl=).with(true)
+        expect(http_instance).to receive(:open_timeout=).with(3)
+        expect(http_instance).to receive(:read_timeout=).with(3)
+
+        response_double = double("Net::HTTPResponse", code: "200", body: "<!DOCTYPE html><title>OK</title>")
+        expect(response_double).to receive(:[]).with("Content-Type").and_return("text/html")
+        expect(http_instance).to receive(:request).and_return(response_double)
+
+        OpenGraphFetcher::Fetcher.fetch("https://example.com")
+      end
     end
     
     context "when given an invalid URL" do

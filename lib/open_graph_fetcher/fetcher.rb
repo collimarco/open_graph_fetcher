@@ -63,9 +63,12 @@ module OpenGraphFetcher
 
     def fetch_data(uri, ip)
       request = Net::HTTP::Get.new(uri.request_uri)
-      Net::HTTP.start(uri.hostname, uri.port, ipaddr: ip, use_ssl: true, open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
-        http.request(request)
-      end
+      http = Net::HTTP.new(uri.hostname, 443)
+      http.ipaddr = ip
+      http.use_ssl = true
+      http.open_timeout = OPEN_TIMEOUT
+      http.read_timeout = READ_TIMEOUT
+      http.request(request)
     rescue Net::OpenTimeout, Net::ReadTimeout => e
       raise FetchError, "Request timed out: #{e.message}"
     rescue StandardError => e
